@@ -33,3 +33,9 @@ test('should have state', () => {
   const store = getStore();
   expect(store.getState().foo).toBe('bar');
 });
+
+test('should trigger thunks', () => {
+  const store = getStore();
+  store.dispatch.thunks.changeFooThunk('test');
+  expect(store.getState().foo).toBe('test');
+});

@@ -149,31 +149,40 @@ export function createStore<
     enhancers?: StoreEnhancer[];
   } = {},
 ): Store<TState<T>, any> & {
-  dispatch: TDispatch<T, any>;
+  dispatch: TDispatch<T, U>;
 } {
   let dispatch;
 
-  function traverseTree(target, cb, path = []) {
+  function traverseTree(target, condition, cb, path = []) {
     return Object.keys(target).reduce((aggr, key) => {
-      aggr[key] = target[key][NODE] ? cb(target[key], path.concat(key)) : traverseTree(target[key], path.concat(key));
+      aggr[key] = condition(target, key)
+        ? cb(target[key], path.concat(key))
+        : traverseTree(target[key], condition, cb, path.concat(key));
 
       return aggr;
     }, {});
   }
 
-  const state = traverseTree(tree, node => node.value) as any;
-  const actions = traverseTree(tree, (node, path) =>
-    Object.keys(node.actions).reduce((aggr, key) => {
-      aggr[key] = (...payload) =>
-        dispatch({
-          type: path.concat(`@@${key.toUpperCase()}`).join('.'),
-          [PATH]: path,
-          payload,
-          [ACTION]: node.actions[key],
-        });
+  const state = traverseTree(
+    tree,
+    (target, key) => Boolean(target[key][NODE]),
+    node => node.value,
+  ) as any;
+  const actions = traverseTree(
+    tree,
+    (target, key) => Boolean(target[key][NODE]),
+    (node, path) =>
+      Object.keys(node.actions).reduce((aggr, key) => {
+        aggr[key] = (...payload) =>
+          dispatch({
+            type: path.concat(`@@${key.toUpperCase()}`).join('.'),
+            [PATH]: path,
+            payload,
+            [ACTION]: node.actions[key],
+          });
 
-      return aggr;
-    }, {}),
+        return aggr;
+      }, {}),
   ) as any;
   const store = createReduxStore(
     (currentState = state, action: TActionPayload) => {
@@ -222,7 +231,11 @@ export function createStore<
 
   Object.assign(store.dispatch, {
     actions,
-    thunks: traverseTree(thunks, thunk => payload => dispatch(thunk(payload))),
+    thunks: traverseTree(
+      thunks,
+      (target, key) => typeof target[key] === 'function',
+      thunk => payload => dispatch(thunk(payload)),
+    ),
   });
 
   return store as any;
