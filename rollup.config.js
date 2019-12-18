@@ -1,10 +1,11 @@
-import sourcemaps from 'rollup-plugin-sourcemaps';
-import nodeResolve from 'rollup-plugin-node-resolve';
-import nodeGlobals from 'rollup-plugin-node-globals';
-import nodeBuiltins from 'rollup-plugin-node-builtins';
-import commonjs from 'rollup-plugin-commonjs';
-import { terser } from 'rollup-plugin-terser';
 import pascalCase from 'pascal-case';
+import commonjs from 'rollup-plugin-commonjs';
+import nodeBuiltins from 'rollup-plugin-node-builtins';
+import nodeGlobals from 'rollup-plugin-node-globals';
+import nodeResolve from 'rollup-plugin-node-resolve';
+import sourcemaps from 'rollup-plugin-sourcemaps';
+import { terser } from 'rollup-plugin-terser';
+
 import pkg from './package.json';
 
 export default {
@@ -20,4 +21,5 @@ export default {
     },
   },
   plugins: [sourcemaps(), nodeResolve(), nodeGlobals(), nodeBuiltins(), commonjs(), terser()],
+  external: ['react', 'react-dom', 'redux', 'react-redux'],
 };
