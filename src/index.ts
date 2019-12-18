@@ -12,6 +12,8 @@ import {
 
 import { ACTION, NODE, PATH } from './constants';
 
+export { Provider } from 'react-redux';
+
 export * from './nodes';
 
 export type TAction<T, K extends any[]> = (value: T, ...payload: K) => T;
@@ -132,9 +134,15 @@ export function createStore<
     [key: string]: any;
   }
 >(
-  tree: T,
-  thunks: U,
-  effects: E,
+  {
+    tree,
+    thunks = {} as U,
+    effects = {} as E,
+  }: {
+    tree: T;
+    thunks: U;
+    effects: E;
+  },
   options: {
     preloadedState?: DeepPartial<TState<T>>;
     middlewares?: any[];

@@ -191,6 +191,21 @@ const MyComponent: React.FC = () => {
 };
 ```
 
+You expose the store to React by using the Provider:
+
+```jsx
+import { render } from 'react-dom';
+import { Provider } from 'redux-nodes';
+import { store } from './store';
+
+render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.querySelector('#app'),
+);
+```
+
 ## Get started
 
 You will typically set up your project with:

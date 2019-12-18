@@ -21,9 +21,12 @@ interface Dispatch extends TDispatch<typeof tree, typeof thunks> {}
 type Thunk<T = void> = TThunk<T, Dispatch, State, typeof effects>;
 
 function getStore() {
-  return createStore(tree, thunks, effects, {
-    enhancers: [],
-  });
+  return createStore(
+    { tree, thunks, effects },
+    {
+      enhancers: [],
+    },
+  );
 }
 
 test('should have state', () => {
