@@ -1,5 +1,5 @@
-import { NODE } from './constants';
 import { TActions, TNode } from '.';
+import { NODE } from './constants';
 
 export function node<T, K extends TActions<T>>(initialValue: T, actions: K = {} as K): TNode<T, K> {
   return {

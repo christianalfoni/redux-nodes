@@ -1,6 +1,6 @@
 import { TDispatch, TState, TThunk, createStore, value } from '..';
 
-const tree = {
+const state = {
   foo: value('bar'),
   test: {
     bar: value('baz'),
@@ -17,15 +17,15 @@ const thunks = {
 
 const effects = {};
 
-type State = TState<typeof tree>;
+type State = TState<typeof state>;
 
-interface Dispatch extends TDispatch<typeof tree, typeof thunks> {}
+interface Dispatch extends TDispatch<typeof state, typeof thunks> {}
 
 type Thunk<T = void> = TThunk<T, Dispatch, State, typeof effects>;
 
 function getStore() {
   return createStore(
-    { tree, thunks, effects },
+    { state, thunks, effects },
     {
       enhancers: [],
     },

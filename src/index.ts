@@ -137,11 +137,11 @@ export function createStore<
   }
 >(
   {
-    tree,
+    state,
     thunks = {} as U,
     effects = {} as E,
   }: {
-    tree: T;
+    state: T;
     thunks?: U;
     effects?: E;
   },
@@ -165,13 +165,13 @@ export function createStore<
     }, {});
   }
 
-  const state = traverseTree(
-    tree,
+  const tree = traverseTree(
+    state,
     (target, key) => Boolean(target[key][NODE]),
     node => node.value,
   ) as any;
   const actions = traverseTree(
-    tree,
+    state,
     (target, key) => Boolean(target[key][NODE]),
     (node, path) =>
       Object.keys(node.actions).reduce((aggr, key) => {
@@ -187,7 +187,7 @@ export function createStore<
       }, {}),
   ) as any;
   const store = createReduxStore(
-    (currentState = state, action: TActionPayload) => {
+    (currentState = tree, action: TActionPayload) => {
       if (!action[ACTION]) {
         return currentState;
       }

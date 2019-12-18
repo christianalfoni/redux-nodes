@@ -8,7 +8,7 @@ Redux is a low level implementation. It makes perfect sense to extend and wrap R
 
 ## Meet the nodes
 
-Even though **redux-nodes** IS redux, you do not write reducers and manage actions. Rather, it all starts with **nodes**. That means instead of creating a reducer, you create a tree of nodes. After all, the reducers are merged into a state tree.
+Even though **redux-nodes** IS redux, you do not write reducers and manage actions. Rather, it all starts with **nodes**. That means instead of creating a reducer, you create a tree of nodes. After all, the reducers are merged into a state tree anyways.
 
 Instead of:
 
@@ -32,7 +32,7 @@ dispatch({
 You write:
 
 ```js
-const tree = {
+const state = {
   foo: value('bar'),
 };
 
@@ -61,7 +61,7 @@ const shoutableValue = initialValue =>
     shout: currentValue => currentValue.toUpperCase() + '!!!',
   });
 
-const tree = {
+const state = {
   foo: shoutableValue('bar'),
 };
 
@@ -213,7 +213,7 @@ You will typically set up your project with:
 ```
 store | index.ts
       | thunks.ts
-      | tree.ts
+      | state.ts
       | effects.ts
 ```
 
@@ -221,21 +221,21 @@ store | index.ts
 
 ```ts
 import { createStore, TState, TDispatch, TThunk, createSelectorHook, createDispatchHook } from 'redux-nodes';
-import { tree } from './tree';
+import { state } from './state';
 import * as thunks from './thunks';
 import * as effects from './effects';
 
-type State = TState<typeof tree>;
+type State = TState<typeof state>;
 
 // We use an interface here due to circular lookups
-interface Dispatch extends TDispatch<typeof tree, typeof thunks> {}
+interface Dispatch extends TDispatch<typeof state, typeof thunks> {}
 
 // We export the Thunk as we will use it in our "thunks" file(s)
 export type Thunk<T = void> = TThunk<T, Dispatch, State, typeof effects>;
 
 export const store = createStore(
   {
-    tree,
+    state,
     thunks,
     effects,
   },
@@ -258,12 +258,12 @@ export const useDispatch = createDispatchHook<Dispatch>();
 export const doSomething: Thunk<string> = value => ({ dispatch, actions, thunks, getState, effects }) => {};
 ```
 
-**tree.ts**
+**state.ts**
 
 ```ts
 import { node, value, dictionary, list, toggle, num } from 'redux-nodes';
 
-export const tree = {
+export const state = {
   // The core "node" has no actions, you will have to define them
   customNode: node('foo', {
     someAction: (currentValue, arg1: string, arg2: number) => currentValue,
@@ -305,10 +305,10 @@ store | index.ts
       | effects.ts
 
       | namespaceA | index.ts
-                   | tree.ts
+                   | state.ts
 
       | namespaceB | index.ts
-                   | tree.ts
+                   | state.ts
 ```
 
 ```ts
@@ -317,9 +317,9 @@ import * as namespaceA from './namespaceA';
 import * as namespaceB from './namespaceB';
 import * as effects from './effects';
 
-const tree = {
-  namespaceA: namespaceA.tree,
-  namespaceB: namespaceB.tree,
+const state = {
+  namespaceA: namespaceA.state,
+  namespaceB: namespaceB.state,
 };
 
 const thunks = {
@@ -327,16 +327,16 @@ const thunks = {
   namespaceB: namespaceB.thunks,
 };
 
-type State = TState<typeof tree>;
+type State = TState<typeof state>;
 
 // We use an interface here due to circular lookups
-interface Dispatch extends TDispatch<typeof tree, typeof thunks> {}
+interface Dispatch extends TDispatch<typeof state, typeof thunks> {}
 
 // We export the Thunk as we will use it in our "thunks" file(s)
 export type Thunk<T = void> = TThunk<T, Dispatch, State, typeof effects>;
 
 export const store = createStore(
-  { tree, thunks, effects },
+  { state, thunks, effects },
   {
     enhancers: [],
     middlewares: [],
@@ -351,4 +351,4 @@ export const useDispatch = createDispatchHook<Dispatch>();
 
 ## Devtools
 
-When you fire actions on the dispatcher those will appear in the Redux devtools as `some.path.in.tree.@@SET`.
+When you fire actions on the dispatcher those will appear in the Redux devtools as `some.path.in.state.@@SET`.
