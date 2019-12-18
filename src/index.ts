@@ -73,16 +73,18 @@ type RawThunks<T extends TThunks> = {
     : never;
 };
 
+type RawActions<T extends TTree> = {
+  [K in keyof T]: T[K] extends TNode<any, infer A>
+    ? {
+        [B in keyof A]: A[B] extends TAction<any, infer P> ? (...payload: P) => void : never;
+      }
+    : T[K] extends TTree
+    ? RawActions<T[K]>
+    : never;
+};
+
 export type TDispatch<T extends TTree, U extends TThunks = {}> = Dispatch<Action> & {
-  actions: {
-    [K in keyof T]: T[K] extends TNode<any, infer A>
-      ? {
-          [B in keyof A]: A[B] extends TAction<any, infer P> ? (...payload: P) => void : never;
-        }
-      : T[K] extends TTree
-      ? TState<T[K]>
-      : never;
-  };
+  actions: RawActions<T>;
   thunks: RawThunks<U>;
 };
 
@@ -197,10 +199,11 @@ export function createStore<
       if (value !== newValue) {
         newState = { ...newState };
 
-        const currentStateLevel = newState as any;
+        let currentStateLevel = newState as any;
 
         action[PATH].forEach((key, index) => {
-          currentStateLevel[key] = index === action[PATH].length - 1 ? newValue : { ...currentStateLevel[key] };
+          currentStateLevel = currentStateLevel[key] =
+            index === action[PATH].length - 1 ? newValue : { ...currentStateLevel[key] };
         });
       }
 

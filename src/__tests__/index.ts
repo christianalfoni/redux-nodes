@@ -2,6 +2,9 @@ import { TDispatch, TState, TThunk, createDispatchHook, createSelectorHook, crea
 
 const tree = {
   foo: value('bar'),
+  test: {
+    bar: value('baz'),
+  },
 };
 
 const changeFooThunk: Thunk<string> = newValue => ({ actions }) => {
@@ -37,5 +40,7 @@ test('should have state', () => {
 test('should trigger thunks', () => {
   const store = getStore();
   store.dispatch.thunks.changeFooThunk('test');
+  store.dispatch.actions.test.bar.set('blip');
   expect(store.getState().foo).toBe('test');
+  expect(store.getState().test.bar).toBe('blip');
 });
