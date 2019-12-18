@@ -140,8 +140,8 @@ export function createStore<
     effects = {} as E,
   }: {
     tree: T;
-    thunks: U;
-    effects: E;
+    thunks?: U;
+    effects?: E;
   },
   options: {
     preloadedState?: DeepPartial<TState<T>>;
