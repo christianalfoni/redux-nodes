@@ -1,4 +1,4 @@
-import { TDispatch, TState, TThunk, createDispatchHook, createSelectorHook, createStore, list, value } from '..';
+import { TDispatch, TState, TThunk, createStore, value } from '..';
 
 const tree = {
   foo: value('bar'),
@@ -41,6 +41,7 @@ test('should trigger thunks', () => {
   const store = getStore();
   store.dispatch.thunks.changeFooThunk('test');
   store.dispatch.actions.test.bar.set('blip');
+
   expect(store.getState().foo).toBe('test');
   expect(store.getState().test.bar).toBe('blip');
 });

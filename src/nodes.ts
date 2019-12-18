@@ -1,5 +1,5 @@
-import { TActions, TNode } from '.';
 import { NODE } from './constants';
+import { TActions, TNode } from '.';
 
 export function node<T, K extends TActions<T>>(initialValue: T, actions: K = {} as K): TNode<T, K> {
   return {
@@ -9,7 +9,7 @@ export function node<T, K extends TActions<T>>(initialValue: T, actions: K = {} 
   };
 }
 
-export const value = <T>(initialValue: T, actions?: TActions<T>) =>
+export const value = <T, K extends TActions<T> = {}>(initialValue: T, actions?: K) =>
   node(initialValue, {
     set: (_, newValue: T) => newValue,
     ...actions,
@@ -41,7 +41,7 @@ export const dictionary = <T>(initialValue: { [key: string]: T }, actions?: TAct
   });
 
 export const list = <T>(initialValue: T[], actions?: TActions<T[]>) =>
-  node(initialValue, {
+  value(initialValue, {
     add: (curr, item: T) => curr.concat(item),
     remove: (curr, item: T) => curr.slice(0).splice(curr.indexOf(item), 1),
     ...actions,
