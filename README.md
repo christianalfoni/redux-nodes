@@ -233,11 +233,18 @@ interface Dispatch extends TDispatch<typeof tree, typeof thunks> {}
 // We export the Thunk as we will use it in our "thunks" file(s)
 export type Thunk<T = void> = TThunk<T, Dispatch, State, typeof effects>;
 
-export const store = createStore(tree, thunks, effects, {
-  enhancers: [],
-  middlewares: [],
-  preloadedState: {},
-});
+export const store = createStore(
+  {
+    tree,
+    thunks,
+    effects,
+  },
+  {
+    enhancers: [],
+    middlewares: [],
+    preloadedState: {},
+  },
+);
 
 export const useSelector = createSelectorHook<State>();
 
@@ -328,11 +335,14 @@ interface Dispatch extends TDispatch<typeof tree, typeof thunks> {}
 // We export the Thunk as we will use it in our "thunks" file(s)
 export type Thunk<T = void> = TThunk<T, Dispatch, State, typeof effects>;
 
-export const store = createStore(tree, thunks, effects, {
-  enhancers: [],
-  middlewares: [],
-  preloadedState: {},
-});
+export const store = createStore(
+  { tree, thunks, effects },
+  {
+    enhancers: [],
+    middlewares: [],
+    preloadedState: {},
+  },
+);
 
 export const useSelector = createSelectorHook<State>();
 
