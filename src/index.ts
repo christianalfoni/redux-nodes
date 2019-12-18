@@ -73,7 +73,7 @@ type RawThunks<T extends TThunks> = {
     : never;
 };
 
-export type TDispatch<T extends TTree, U extends TThunks> = Dispatch<Action> & {
+export type TDispatch<T extends TTree, U extends TThunks = {}> = Dispatch<Action> & {
   actions: {
     [K in keyof T]: T[K] extends TNode<any, infer A>
       ? {
@@ -222,7 +222,7 @@ export function createStore<
 
   Object.assign(store.dispatch, {
     actions,
-    thunks,
+    thunks: traverseTree(thunks, thunk => payload => dispatch(thunk(payload))),
   });
 
   return store as any;
