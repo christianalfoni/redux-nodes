@@ -1,7 +1,7 @@
 {
   "name": "redux-nodes",
-  "version": "3.0.0",
-  "description": "A productive API for Redux and React",
+  "version": "4.0.0",
+  "description": "Replacing reducers with nodes",
   "author": "Christian Alfoni <christianalfoni@gmail.com>",
   "license": "MIT",
   "repository": "git+https://github.com/christianalfoni/redux-nodes.git",
@@ -40,13 +40,6 @@
   ],
   "dependencies": {
     "@types/node": "^8.0.0",
-    "@types/react": "^16.9.16",
-    "@types/react-dom": "^16.9.4",
-    "@types/react-redux": "7.x",
-    "react": "16.x",
-    "react-dom": "16.x",
-    "react-redux": "7.x",
-    "redux": "4.x",
     "tslib": "^1.9.3"
   },
   "devDependencies": {

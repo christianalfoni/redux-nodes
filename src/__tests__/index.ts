@@ -1,46 +1,35 @@
-import { TDispatch, TState, TThunk, createStore, value } from '..';
+import { createStore } from 'redux';
 
-const state = {
-  foo: value('bar'),
-  test: {
-    bar: value('baz'),
-  },
-};
+import { createNodes, dictionary, list, node, value } from '..';
 
-const changeFooThunk: Thunk<string> = newValue => ({ actions }) => {
-  actions.foo.set(newValue);
-};
+function getInstance() {
+  const foo = value('bar');
+  const bar = value('baz');
 
-const thunks = {
-  changeFooThunk,
-};
-
-const effects = {};
-
-type State = TState<typeof state>;
-
-interface Dispatch extends TDispatch<typeof state, typeof thunks> {}
-
-type Thunk<T = void> = TThunk<T, Dispatch, State, typeof effects>;
-
-function getStore() {
-  return createStore(
-    { state, thunks, effects },
-    {
-      enhancers: [],
+  const { reducer, actions } = createNodes({
+    foo,
+    test: {
+      bar,
     },
-  );
+  });
+
+  const store = createStore(reducer);
+
+  return {
+    store,
+    actions,
+  };
 }
 
 test('should have state', () => {
-  const store = getStore();
+  const { store } = getInstance();
   expect(store.getState().foo).toBe('bar');
 });
 
 test('should trigger thunks', () => {
-  const store = getStore();
-  store.dispatch.thunks.changeFooThunk('test');
-  store.dispatch.actions.test.bar.set('blip');
+  const { store, actions } = getInstance();
+  store.dispatch(actions.foo.set('test'));
+  store.dispatch(actions.test.bar.set('blip'));
 
   expect(store.getState().foo).toBe('test');
   expect(store.getState().test.bar).toBe('blip');
