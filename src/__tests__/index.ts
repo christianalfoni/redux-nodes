@@ -1,36 +1,87 @@
 import { createStore } from 'redux';
 
-import { createNodes, dictionary, list, node, value } from '..';
+import { buildNodes, node } from '..';
 
-function getInstance() {
-  const foo = value('bar');
-  const bar = value('baz');
+test('should have state', () => {
+  const foo = node({
+    foo: 'bar',
+  });
+  const { reducer } = buildNodes(foo);
+  const store = createStore(reducer);
+  expect(store.getState().foo).toBe('bar');
+});
 
-  const { reducer, actions } = createNodes({
+test('should trigger actions, also nested', () => {
+  const foo = node(
+    {
+      foo: 'bar',
+    },
+    {
+      changeFoo: (state, newFoo: string) => (state.foo = newFoo),
+    },
+  );
+  const bar = node(
+    {
+      foo: 'bar',
+    },
+    {
+      changeFoo: (state, newFoo: string) => (state.foo = newFoo),
+    },
+  );
+
+  const { reducer, actionCreators: actions } = buildNodes({
     foo,
     test: {
       bar,
     },
   });
-
   const store = createStore(reducer);
+  store.dispatch(actions.foo.changeFoo('test'));
+  store.dispatch(actions.test.bar.changeFoo('blip'));
 
-  return {
-    store,
-    actions,
-  };
-}
-
-test('should have state', () => {
-  const { store } = getInstance();
-  expect(store.getState().foo).toBe('bar');
+  expect(store.getState().foo.foo).toBe('test');
+  expect(store.getState().test.bar.foo).toBe('blip');
 });
 
-test('should trigger thunks', () => {
-  const { store, actions } = getInstance();
-  store.dispatch(actions.foo.set('test'));
-  store.dispatch(actions.test.bar.set('blip'));
+test('should handle general dispatches', () => {
+  const foo = node(
+    {
+      foo: 'bar',
+    },
+    {
+      changeFoo: (state, newFoo: string) => (state.foo = newFoo),
+    },
+    (state, action) => {
+      if (action.type === 'test.bar.changeFoo') {
+        state.foo = 'testBarChanged';
+      }
+    },
+  );
+  const bar = node(
+    {
+      foo: 'bar',
+    },
+    {
+      changeFoo: (state, newFoo: string) => (state.foo = newFoo),
+    },
+    (state, action) => {
+      if (action.type === 'foo.changeFoo') {
+        state.foo = 'fooChanged';
+      }
+    },
+  );
 
-  expect(store.getState().foo).toBe('test');
-  expect(store.getState().test.bar).toBe('blip');
+  const { reducer, actionCreators: actions } = buildNodes({
+    foo,
+    test: {
+      bar,
+    },
+  });
+  const store = createStore(reducer);
+  store.dispatch(actions.foo.changeFoo('test'));
+  expect(store.getState().foo.foo).toBe('test');
+  expect(store.getState().test.bar.foo).toBe('fooChanged');
+  store.dispatch(actions.test.bar.changeFoo('blip'));
+  expect(store.getState().foo.foo).toBe('testBarChanged');
+  expect(store.getState().test.bar.foo).toBe('blip');
 });

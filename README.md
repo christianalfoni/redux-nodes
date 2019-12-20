@@ -1,49 +1,163 @@
 # redux-nodes
 
-Replacing reducers with nodes
+A Typescript friendly replacement for reducers
 
 ## Why?
 
-Even though reducers are a good low level concept for defining state and managing the state using actions, there are other abstractions that can help our productivity and hapiness as developers. **redux-nodes** allows you to rather define a state tree of nodes that is converted into a reducer, giving you fully typed state and actions right out of the box. Basically it is a Typescript first API.
+Even though reducers are a great low level concept for defining and changing state, we can benefit from creating an abstraction over these reducers to make us more productive and happier. **redux-nodes** allows you to define a state tree of nodes that results in fully typed state and action creators.
 
 ## Meet the nodes
 
-Even though **redux-nodes** IS redux, you do not write reducers and manage actions. Rather, it all starts with **nodes**. That means instead of creating a reducer, you create a tree of nodes. After all, the reducers are merged into a state tree, it is the same with the **nodes**.
+### Defining state
 
-Instead of:
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
 
-```js
-const reducer = (state = { foo: 'bar' }, action) => {
-  switch (action.type) {
-    case 'setFoo': {
-      return { ...state, foo: action.payload };
+// Lets start defining a single node
+const countNode = node({
+  count: 0,
+});
+
+// We build the nodes and get back a "reducer"
+const { reducer } = buildNodes(countNode);
+
+// We create our store passing in our create reducer
+const store = createStore(reducer);
+
+store.getState(); // { "count": 0 }
+```
+
+### Defining actions
+
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
+
+const countNode = node(
+  {
+    count: 0,
+  },
+  // The second argument is the actions to be managed and
+  // what state should change related to that action. "Immer"
+  // is running under the hood and allows us to express changes
+  // using plain imperative API
+  {
+    increment: state => state.count++,
+  },
+);
+
+// The "buildNodes" also returns our "action creators"
+const { reducer, actionCreators } = buildNodes(countNode);
+const store = createStore(reducer);
+
+// We dispatch by calling our action creator, which
+// returns the action
+store.dispatch(actionCreators.increment());
+
+store.getState(); // { "count": 1 }
+```
+
+### Passing a payload
+
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
+
+const countNode = node(
+  {
+    count: 0,
+  },
+  {
+    // You can define as many arguments as you want and type them
+    increment: (state, amount: number = 1) => state.count + amount,
+  },
+);
+
+const { reducer, actionCreators } = buildNodes(countNode);
+const store = createStore(reducer);
+
+// They will also be typed here
+store.dispatch(actionCreators.increment(2));
+
+store.getState(); // { "count": 2 }
+```
+
+### Other actions
+
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
+
+const countNode = node(
+  {
+    count: 0,
+  },
+  {
+    increment: (state, amount: number = 1) => state.count + amount,
+  },
+  // The third argument is a plain reducer, which can handle any action
+  (state, action) => {
+    switch (action.type) {
+      case 'custom-action':
+        state.count = action.payload;
     }
-  }
+  },
+);
 
-  return state;
-};
-
+const { reducer, actionCreators } = buildNodes(countNode);
 const store = createStore(reducer);
 
 store.dispatch({
-  type: 'setFoo',
-  payload: 'bar2',
+  type: 'custom-action',
+  payload: 5,
 });
+
+store.getState(); // { "count": 5 }
 ```
 
-You write:
+### Scaling up the nodes
 
-```js
-const { reducer, actions } = createNodes({
-  foo: value('bar'),
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
+import { User, Issue, Project } from './types';
+
+const auth = node(
+  {
+    user: null as User,
+    jwt: null as string,
+  },
+  {
+    setUser: (state, user: User) => (state.user = user),
+    setJwt: (state, jwt: string) => (state.jwt = jwt),
+  },
+);
+
+const dashboard = node(
+  {
+    issues: [] as Issue[],
+    projects: [] as Project[],
+  },
+  {
+    addIssue: (state, issue: Issue) => state.issues.push(issue),
+    addProject: (state, project: Project) => state.projects.push(project),
+  },
+);
+
+const { reducer, actionCreators } = buildNodes({
+  auth,
+  dashboard,
 });
-
 const store = createStore(reducer);
 
-store.dispatch(actions.foo.set('bar2'));
-```
+store.dispatch({
+  type: 'custom-action',
+  payload: 5,
+});
 
-**value** is a type of node. It is a node that gives you a **set** action. There are other nodes as well. For example **list**, **dictionary**, **toggle** etc. All these nodes has preset actions that becomes available as typed methods on the **actions**. This reduces boilerplate and improves the typing experience.
+store.getState(); // { "count": 5 }
+```
 
 ## Extending nodes
 
