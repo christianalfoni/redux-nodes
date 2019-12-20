@@ -85,3 +85,21 @@ test('should handle general dispatches', () => {
   expect(store.getState().foo.foo).toBe('testBarChanged');
   expect(store.getState().test.bar.foo).toBe('blip');
 });
+
+test('should trigger change', () => {
+  expect.assertions(1);
+  const foo = node(
+    {
+      foo: 'bar',
+    },
+    {
+      changeBar: (state, newFoo: string) => (state.foo = newFoo),
+    },
+  );
+  const { reducer, actionCreators } = buildNodes(foo);
+  const store = createStore(reducer);
+  store.subscribe(() => {
+    expect(store.getState().foo).toBe('bar2');
+  });
+  store.dispatch(actionCreators.changeBar('bar2'));
+});

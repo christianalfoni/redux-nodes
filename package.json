@@ -1,6 +1,6 @@
 {
   "name": "redux-nodes",
-  "version": "4.0.0",
+  "version": "5.0.1",
   "description": "Replacing reducers with nodes",
   "author": "Christian Alfoni <christianalfoni@gmail.com>",
   "license": "MIT",

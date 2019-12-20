@@ -109,18 +109,21 @@ export function buildNodes<T extends TTree>(
 
   function updateState(currentState, path, cb) {
     const value = path.reduce((aggr: any, key) => aggr[key], currentState);
-    const newValue = produce(value, draft => {
-      cb(draft);
-    });
+    const newValue = produce(value, cb);
     let newState = currentState;
 
     if (value !== newValue) {
       newState = { ...newState };
       let currentStateLevel = newState as any;
-      path.forEach((key, index) => {
-        currentStateLevel = currentStateLevel[key] =
-          index === path.length - 1 ? newValue : { ...currentStateLevel[key] };
-      });
+
+      if (path.length) {
+        path.forEach((key, index) => {
+          currentStateLevel = currentStateLevel[key] =
+            index === path.length - 1 ? newValue : { ...currentStateLevel[key] };
+        });
+      } else {
+        newState = newValue;
+      }
     }
 
     return newState;

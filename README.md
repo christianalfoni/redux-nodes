@@ -6,9 +6,7 @@ A Typescript friendly replacement for reducers
 
 Even though reducers are a great low level concept for defining and changing state, we can benefit from creating an abstraction over these reducers to make us more productive and happier. **redux-nodes** allows you to define a state tree of nodes that results in fully typed state and action creators.
 
-## Meet the nodes
-
-### Defining state
+## Defining state
 
 ```ts
 import { buildNodes, node } from 'redux-nodes';
@@ -28,7 +26,7 @@ const store = createStore(reducer);
 store.getState(); // { "count": 0 }
 ```
 
-### Defining actions
+## Defining actions
 
 ```ts
 import { buildNodes, node } from 'redux-nodes';
@@ -58,7 +56,7 @@ store.dispatch(actionCreators.increment());
 store.getState(); // { "count": 1 }
 ```
 
-### Passing a payload
+## Passing a payload
 
 ```ts
 import { buildNodes, node } from 'redux-nodes';
@@ -83,7 +81,7 @@ store.dispatch(actionCreators.increment(2));
 store.getState(); // { "count": 2 }
 ```
 
-### Other actions
+## Other actions
 
 ```ts
 import { buildNodes, node } from 'redux-nodes';
@@ -116,7 +114,7 @@ store.dispatch({
 store.getState(); // { "count": 5 }
 ```
 
-### Scaling up the nodes
+## Scaling up
 
 ```ts
 import { buildNodes, node } from 'redux-nodes';
@@ -151,74 +149,42 @@ const { reducer, actionCreators } = buildNodes({
 });
 const store = createStore(reducer);
 
-store.dispatch({
-  type: 'custom-action',
-  payload: 5,
-});
-
-store.getState(); // { "count": 5 }
+store.dispatch(actionCreators.auth.setJwt('123'));
 ```
 
-## Extending nodes
-
-**value** in the example above is a **node**, more specifically it has been extended from **node**. You can also extend the nodes to add domain specific actions to your state. For example we can create a dictionary where we can toggle todos:
+You can nest these nodes however you want:
 
 ```ts
-const todos = dictionary<Todo>({}).extend({
-  toggleCompleted: (currentTodos, id: string) => ({
-    ...currentTodos,
-    [id]: {
-      ...currentTodos[id],
-      completed: !currentTodos[id].completed,
-    },
-  }),
-});
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
+import { User, Issue, Project } from './types';
 
-const { reducer, actions } = createNodes({
-  todos,
-});
+const auth = node(
+  {
+    user: null as User,
+    jwt: null as string,
+  },
+  {
+    setUser: (state, user: User) => (state.user = user),
+    setJwt: (state, jwt: string) => (state.jwt = jwt),
+  },
+);
 
+const admin = node(...)
+const issues = node(...)
+
+const { reducer, actionCreators } = buildNodes({
+  auth,
+  dashboard: {
+    admin,
+    issues
+  },
+});
 const store = createStore(reducer);
 
-store.dispatch(actions.todos.toggleCompleted('123'));
-```
-
-As with reducers you can use [Immer](https://immerjs.github.io/immer/docs/introduction) to express complex changes better:
-
-```ts
-const todos = dictionary<Todo>({}).extend({
-  toggleCompleted: (currentTodos, id: string) =>
-    produce(currentTodos, draft => {
-      draft[id].completed = !draft[index].completed;
-    }),
-});
-```
-
-But we can create completely new reusable nodes as well:
-
-```ts
-const uniqueList = <T>(initialList: T[]) =>
-  value(initialList).extend({
-    add: (currentList, item: T) => {
-      if (currentList.includes(item)) {
-        return currentList;
-      }
-
-      return currentList.concat(item);
-    },
-    remove: (currentList, item: T) => currentList.filter(currentItem => currentItem !== item),
-  });
-
-const { reducer, actions } = createNodes({
-  foo: uniqueList<string>(['foo']),
-});
-
-const store = createStore(reducer);
-
-// Does not add "foo", as it is already there
-store.dispatch(actions.foo.add('foo'));
+store.dispatch(actionCreators.dashboard.admin.toggleView());
 ```
 
 ## Devtools
 
-When you fire actions on the dispatcher those will appear in the Redux devtools as `some.path.in.state.@@SET`, where `@@` represent the action fired.
+When you fire actions on the dispatcher those will appear in the Redux devtools with a type of `dashboard.admin.toggleView`, and a `payload` property, being an array of arguments.
