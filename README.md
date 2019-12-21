@@ -10,7 +10,6 @@ Even though reducers are a great low level concept for defining and changing sta
 
 [![Edit redux-nodes](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/focused-cache-ed22i?fontsize=14&hidenavigation=1&theme=dark)
 
-
 ## Defining state
 
 ```ts
@@ -25,7 +24,7 @@ const countNode = node({
 // We build the nodes and get back a "reducer"
 const { reducer } = buildNodes(countNode);
 
-// We create our store passing in our create reducer
+// We create our store passing in our reducer
 const store = createStore(reducer);
 
 store.getState(); // { "count": 0 }
@@ -44,7 +43,8 @@ const countNode = node(
   // The second argument is the actions to be managed and
   // what state should change related to that action. "Immer"
   // is running under the hood and allows us to express changes
-  // using plain imperative API
+  // with the mutable API of JavaScript, though with an immutable
+  // result
   {
     increment: state => state.count++,
   },
@@ -80,7 +80,8 @@ const countNode = node(
 const { reducer, actionCreators } = buildNodes(countNode);
 const store = createStore(reducer);
 
-// They will also be typed here
+// The typing will be reflected when calling the
+// action creator
 store.dispatch(actionCreators.increment(2));
 
 store.getState(); // { "count": 2 }
@@ -126,6 +127,7 @@ import { buildNodes, node } from 'redux-nodes';
 import { createStore } from 'redux';
 import { User, Issue, Project } from './types';
 
+// We create one "auth" node
 const auth = node(
   {
     user: null as User,
@@ -137,6 +139,7 @@ const auth = node(
   },
 );
 
+// And also a "dashboard" node
 const dashboard = node(
   {
     issues: [] as Issue[],
@@ -148,6 +151,8 @@ const dashboard = node(
   },
 );
 
+// We put the nodes into a tree, effectively namespacing the
+// state and actions with "auth" and "dashboard"
 const { reducer, actionCreators } = buildNodes({
   auth,
   dashboard,
@@ -155,9 +160,11 @@ const { reducer, actionCreators } = buildNodes({
 const store = createStore(reducer);
 
 store.dispatch(actionCreators.auth.setJwt('123'));
+
+store.getState().auth.jwt; // "123"
 ```
 
-You can nest these nodes however you want:
+You can nest these nodes into the tree in any matter, effectively namespacing your state and action creators:
 
 ```ts
 import { buildNodes, node } from 'redux-nodes';
@@ -178,6 +185,7 @@ const auth = node(
 const admin = node(...)
 const issues = node(...)
 
+// We inserted "admin" and "issues" under the "dashboard" namespace
 const { reducer, actionCreators } = buildNodes({
   auth,
   dashboard: {
@@ -188,6 +196,7 @@ const { reducer, actionCreators } = buildNodes({
 const store = createStore(reducer);
 
 store.dispatch(actionCreators.dashboard.admin.toggleView());
+store.getState().dashboard.admin.foo // "bar"
 ```
 
 ## Devtools
