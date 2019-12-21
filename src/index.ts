@@ -31,12 +31,12 @@ export type TState<T extends TTree> = T extends INode<infer V, any>
 
 export type TActionCreators<T extends TTree> = T extends INode<any, infer A>
   ? {
-      [U in keyof A]: A[U] extends TAction<any, infer P> ? (...payload: P) => void : never;
+      [U in keyof A]: A[U] extends TAction<any, infer P> ? (...payload: P) => IActionPayload : never;
     }
   : {
       [K in keyof T]: T[K] extends INode<any, infer AA>
         ? {
-            [U in keyof AA]: AA[U] extends TAction<any, infer P> ? (...payload: P) => void : never;
+            [U in keyof AA]: AA[U] extends TAction<any, infer P> ? (...payload: P) => IActionPayload : never;
           }
         : T[K] extends TTree
         ? TActionCreators<T[K]>
@@ -66,7 +66,7 @@ export function node<T extends { [key: string]: any }, K extends IActions<T>>(
 export function buildNodes<T extends TTree>(
   tree: T,
 ): {
-  reducer: (state: TState<T>, action: any) => TState<T>;
+  reducer: (state: TState<T> | undefined, action: any) => TState<T>;
   actionCreators: TActionCreators<T>;
 } {
   function traverseTree(target, cb, path = []) {
