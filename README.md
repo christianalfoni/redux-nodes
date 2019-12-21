@@ -6,6 +6,11 @@ A Typescript friendly replacement for reducers
 
 Even though reducers are a great low level concept for defining and changing state, we can benefit from creating an abstraction over these reducers to make us more productive and happier. **redux-nodes** allows you to define a state tree of nodes that results in fully typed state and action creators.
 
+## Example
+
+[![Edit redux-nodes](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/focused-cache-ed22i?fontsize=14&hidenavigation=1&theme=dark)
+
+
 ## Defining state
 
 ```ts
