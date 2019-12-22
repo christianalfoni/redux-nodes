@@ -1,10 +1,10 @@
 # redux-nodes
 
-Reducer nodes for typing out of the box
+Simply typed state, actions and selectors
 
 ## Why?
 
-Even though reducers are a great low level concept for defining and changing state, we can benefit from creating an abstraction over these reducers to make us more productive and happier. **redux-nodes** allows you to define a state tree of nodes that results in fully typed state and action creators.
+Even though reducers are a great low level concept for defining and changing state, we can benefit from creating an abstraction over these reducers to make us more productive and happier. **redux-nodes** allows you to define a state tree of nodes that results in fully typed state, actions (action creators) and selectors.
 
 ## Example
 
