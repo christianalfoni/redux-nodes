@@ -10,7 +10,7 @@ export interface IActions<T> {
   [key: string]: TAction<T, any>;
 }
 
-export interface INode<T, K extends IActions<any>> {
+export interface INode<T extends {}, K extends IActions<any>> {
   [NODE]: true;
   value: T;
   actions: K;
@@ -43,6 +43,20 @@ export type TActionCreators<T extends TTree> = T extends INode<any, infer A>
         : never;
     };
 
+export type TSelectors<T extends TTree> = T extends INode<infer V, any>
+  ? {
+      [P in keyof V]: (state: TState<T>) => V[P];
+    }
+  : {
+      [K in keyof T]: T[K] extends INode<infer VV, any>
+        ? {
+            [PP in keyof VV]: (state: TState<T>) => VV[PP];
+          }
+        : T[K] extends TTree
+        ? TSelectors<T[K]>
+        : never;
+    };
+
 interface IActionPayload {
   type: string;
   payload: any;
@@ -68,6 +82,7 @@ export function buildNodes<T extends TTree>(
 ): {
   reducer: (state: TState<T> | undefined, action: any) => TState<T>;
   actionCreators: TActionCreators<T>;
+  selectors: TSelectors<T>;
 } {
   function traverseTree(target, cb, path = []) {
     return Object.keys(target).reduce((aggr, key) => {
@@ -87,6 +102,14 @@ export function buildNodes<T extends TTree>(
         payload,
         [ACTION]: actionsNode.actions[key],
       });
+
+      return aggr;
+    }, {});
+  }
+
+  function createSelectors(selectorsNode, path) {
+    return Object.keys(selectorsNode.value).reduce((aggr, key) => {
+      aggr[key] = selectorState => path.concat(key).reduce((stateAggr, stateKey) => stateAggr[stateKey], selectorState);
 
       return aggr;
     }, {});
@@ -149,9 +172,11 @@ export function buildNodes<T extends TTree>(
 
     return newState;
   };
+  const selectors = tree[NODE] ? createSelectors(tree, []) : (traverseTree(tree, createSelectors) as any);
 
   return {
     reducer,
     actionCreators,
+    selectors,
   };
 }

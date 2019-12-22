@@ -30,6 +30,69 @@ const store = createStore(reducer);
 store.getState(); // { "count": 0 }
 ```
 
+## Selectors
+
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
+
+const countNode = node({
+  count: 0,
+});
+
+const { reducer, selectors } = buildNodes(countNode);
+
+const store = createStore(reducer);
+
+selectors.count(store.getState()); // 0
+```
+
+Selectors are used with libraries like [reselect](https://github.com/reduxjs/reselect) and [react-redux](https://react-redux.js.org/). This feature basically removes any need for typing.
+
+```ts
+import { createSelector } from 'reselect';
+import { buildNodes, node } from 'redux-nodes';
+import { createStore } from 'redux';
+
+type Todo = {
+  id: number;
+  text: string;
+  completed: boolean;
+};
+
+enum Filter {
+  ALL,
+  COMPLETED,
+  ACTIVE,
+}
+
+const app = node({
+  todos: [] as Todo[],
+  filter: Filter.ALL,
+});
+
+const { reducer, selectors: stateSelectors } = buildNodes(app);
+
+const store = createStore(reducer);
+
+const visibleTodos = createSelector(stateSelectors.todos, stateSelectors.filter, (todos, filter) => {
+  switch (filter) {
+    case Filter.SHOW_ALL:
+      return todos;
+    case Filter.SHOW_COMPLETED:
+      return todos.filter(t => t.completed);
+    case Filter.SHOW_ACTIVE:
+      return todos.filter(t => !t.completed);
+    default:
+      throw new Error("Unknown filter: " + filter);
+})
+
+const selectors = {
+  ...stateSelectors,
+  visibleTodos,
+};
+```
+
 ## Defining actions
 
 ```ts

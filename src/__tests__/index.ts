@@ -103,3 +103,27 @@ test('should trigger change', () => {
   });
   store.dispatch(actionCreators.changeBar('bar2'));
 });
+
+test('should expose selectors', () => {
+  expect.assertions(1);
+  const foo = node({
+    foo: 'bar',
+  });
+  const { reducer, selectors } = buildNodes(foo);
+  const store = createStore(reducer);
+
+  expect(selectors.foo(store.getState())).toBe('bar');
+});
+
+test('should expose nested selectors', () => {
+  expect.assertions(1);
+  const foo = node({
+    foo: 'bar',
+  });
+  const { reducer, selectors } = buildNodes({
+    foo,
+  });
+  const store = createStore(reducer);
+
+  expect(selectors.foo.foo(store.getState())).toBe('bar');
+});
