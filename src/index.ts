@@ -81,7 +81,7 @@ export function buildNodes<T extends TTree>(
   tree: T,
 ): {
   reducer: (state: TState<T> | undefined, action: any) => TState<T>;
-  actionCreators: TActionCreators<T>;
+  actions: TActionCreators<T>;
   selectors: TSelectors<T>;
 } {
   function traverseTree(target, cb, path = []) {
@@ -153,7 +153,7 @@ export function buildNodes<T extends TTree>(
   }
 
   const state = tree[NODE] ? tree.value : (traverseTree(tree, currentNode => currentNode.value) as any);
-  const actionCreators = tree[NODE] ? convertActions(tree, []) : (traverseTree(tree, convertActions) as any);
+  const actions = tree[NODE] ? convertActions(tree, []) : (traverseTree(tree, convertActions) as any);
   const reducers = getReducers(tree);
   const reducer = (currentState = state, action: IActionPayload) => {
     let newState = currentState;
@@ -176,7 +176,7 @@ export function buildNodes<T extends TTree>(
 
   return {
     reducer,
-    actionCreators,
+    actions,
     selectors,
   };
 }

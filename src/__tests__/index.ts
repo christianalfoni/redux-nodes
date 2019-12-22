@@ -29,7 +29,7 @@ test('should trigger actions, also nested', () => {
     },
   );
 
-  const { reducer, actionCreators: actions } = buildNodes({
+  const { reducer, actions } = buildNodes({
     foo,
     test: {
       bar,
@@ -71,7 +71,7 @@ test('should handle general dispatches', () => {
     },
   );
 
-  const { reducer, actionCreators: actions } = buildNodes({
+  const { reducer, actions } = buildNodes({
     foo,
     test: {
       bar,
@@ -96,12 +96,12 @@ test('should trigger change', () => {
       changeBar: (state, newFoo: string) => (state.foo = newFoo),
     },
   );
-  const { reducer, actionCreators } = buildNodes(foo);
+  const { reducer, actions } = buildNodes(foo);
   const store = createStore(reducer);
   store.subscribe(() => {
     expect(store.getState().foo).toBe('bar2');
   });
-  store.dispatch(actionCreators.changeBar('bar2'));
+  store.dispatch(actions.changeBar('bar2'));
 });
 
 test('should expose selectors', () => {

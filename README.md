@@ -1,6 +1,6 @@
 # redux-nodes
 
-A Typescript friendly replacement for reducers
+Reducer nodes for typing out of the box
 
 ## Why?
 
@@ -113,13 +113,13 @@ const countNode = node(
   },
 );
 
-// The "buildNodes" also returns our "action creators"
-const { reducer, actionCreators } = buildNodes(countNode);
+// The "buildNodes" also returns our "actions" (action creators)
+const { reducer, actions = buildNodes(countNode);
 const store = createStore(reducer);
 
 // We dispatch by calling our action creator, which
 // returns the action
-store.dispatch(actionCreators.increment());
+store.dispatch(actions.increment());
 
 store.getState(); // { "count": 1 }
 ```
@@ -140,12 +140,12 @@ const countNode = node(
   },
 );
 
-const { reducer, actionCreators } = buildNodes(countNode);
+const { reducer, actions } = buildNodes(countNode);
 const store = createStore(reducer);
 
 // The typing will be reflected when calling the
 // action creator
-store.dispatch(actionCreators.increment(2));
+store.dispatch(actions.increment(2));
 
 store.getState(); // { "count": 2 }
 ```
@@ -172,7 +172,7 @@ const countNode = node(
   },
 );
 
-const { reducer, actionCreators } = buildNodes(countNode);
+const { reducer } = buildNodes(countNode);
 const store = createStore(reducer);
 
 store.dispatch({
@@ -216,18 +216,18 @@ const dashboard = node(
 
 // We put the nodes into a tree, effectively namespacing the
 // state and actions with "auth" and "dashboard"
-const { reducer, actionCreators } = buildNodes({
+const { reducer, actions } = buildNodes({
   auth,
   dashboard,
 });
 const store = createStore(reducer);
 
-store.dispatch(actionCreators.auth.setJwt('123'));
+store.dispatch(actions.auth.setJwt('123'));
 
 store.getState().auth.jwt; // "123"
 ```
 
-You can nest these nodes into the tree in any matter, effectively namespacing your state and action creators:
+You can nest these nodes into the tree in any matter, effectively namespacing your state and actions:
 
 ```ts
 import { buildNodes, node } from 'redux-nodes';
@@ -249,7 +249,7 @@ const admin = node(...)
 const issues = node(...)
 
 // We inserted "admin" and "issues" under the "dashboard" namespace
-const { reducer, actionCreators } = buildNodes({
+const { reducer, actions } = buildNodes({
   auth,
   dashboard: {
     admin,
@@ -258,7 +258,7 @@ const { reducer, actionCreators } = buildNodes({
 });
 const store = createStore(reducer);
 
-store.dispatch(actionCreators.dashboard.admin.toggleView());
+store.dispatch(actions.dashboard.admin.toggleView());
 store.getState().dashboard.admin.foo // "bar"
 ```
 
