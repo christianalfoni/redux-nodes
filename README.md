@@ -13,9 +13,11 @@ Even though reducers are a great low level concept for defining and changing sta
 ## Examples
 
 **simple example**
+
 [![Edit redux-nodes](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/focused-cache-ed22i?fontsize=14&hidenavigation=1&theme=dark)
 
 **todomvc**
+
 [![Edit redux-nodes todomvc](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/rough-dawn-wdce2?fontsize=14&hidenavigation=1&theme=dark)
 
 ## Defining state
