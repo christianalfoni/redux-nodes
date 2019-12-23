@@ -64,43 +64,50 @@ import { createSelector } from 'reselect';
 import { buildNodes, node } from 'redux-nodes';
 import { createStore } from 'redux';
 
-type Todo = {
-  id: number;
-  text: string;
-  completed: boolean;
-};
-
-enum Filter {
-  ALL,
-  COMPLETED,
-  ACTIVE,
-}
-
 const app = node({
-  todos: [] as Todo[],
-  filter: Filter.ALL,
+  items: [] as string[],
+  filterUpperCase: true,
 });
 
+// We use the "selectors" and name them "stateSelectors", as we are going
+// to add an additional custom selector using "reselect"
 const { reducer, selectors: stateSelectors } = buildNodes(app);
 
-const store = createStore(reducer);
+export const store = createStore(reducer);
 
-const visibleTodos = createSelector(stateSelectors.todos, stateSelectors.filter, (todos, filter) => {
-  switch (filter) {
-    case Filter.SHOW_ALL:
-      return todos;
-    case Filter.SHOW_COMPLETED:
-      return todos.filter(t => t.completed);
-    case Filter.SHOW_ACTIVE:
-      return todos.filter(t => !t.completed);
-    default:
-      throw new Error("Unknown filter: " + filter);
-})
+// We create our custom selector and can safely just use existing selectors
+// created for us, as they are typed. That means "items" and "filterUpperCase" is
+// correctly typed
+const filteredItems = createSelector(stateSelectors.items, stateSelectors.filterUpperCase, (items, filterUpperCase) => {
+  if (filterUpperCase) {
+    return items.filter(item => item.toUpperCase() !== item);
+  }
+  return items;
+});
 
-const selectors = {
+// Now we create our complete selectors object where we bring
+// in the custom selector as well
+export const selectors = {
   ...stateSelectors,
-  visibleTodos,
+  filteredItems,
 };
+```
+
+In a component you would do something like:
+
+```tsx
+import * as React from 'react'
+import { useSelector } from 'react-redux'
+import { selectors } from '../store'
+
+export const MyComponent: React.FC = () => {
+  // When using the "useSelector" for React you combine it with
+  // your existing selectors, which results in typed values. No
+  // need to type "react-redux" itself
+  const filteredItems = useSelector(selectors.filteredItems)
+
+  return <div>{...}</div>
+}
 ```
 
 ## Defining actions
