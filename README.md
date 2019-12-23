@@ -6,6 +6,8 @@ Simply typed state, actions and selectors
 
 Even though reducers are a great low level concept for defining and changing state, we can benefit from creating an abstraction over these reducers to make us more productive and happier. **redux-nodes** allows you to define a state tree of nodes that results in fully typed state, actions (action creators) and selectors.
 
+### Introduction clip
+
 [![INTRODUCTION](https://img.youtube.com/vi/jDa8N5-tmlo/0.jpg)](https://www.youtube.com/watch?v=jDa8N5-tmlo)
 
 ## Examples
