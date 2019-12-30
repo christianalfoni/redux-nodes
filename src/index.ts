@@ -1,4 +1,5 @@
 import produce from 'immer';
+import thunkMiddleware, { ThunkMiddleware } from 'redux-thunk';
 
 const NODE = Symbol('NODE');
 const ACTION = Symbol('ACTION');
@@ -64,6 +65,14 @@ interface IActionPayload {
   [ACTION]: TAction<any, any>;
 }
 
+interface IEffects {
+  [key: string]: any;
+}
+
+type TThunk<T extends TState<any>, E extends IEffects> = <P extends any[]>(
+  thunk: (...args: P) => (dispatch: (action: { type: string }) => void, getState: () => T, effects: E) => void,
+) => (...args: P) => IActionPayload;
+
 export function node<T extends { [key: string]: any }, K extends IActions<T>>(
   value: T,
   actions: K = {} as K,
@@ -83,6 +92,12 @@ export function buildNodes<T extends TTree>(
   reducer: (state: TState<T> | undefined, action: any) => TState<T>;
   actions: TActionCreators<T>;
   selectors: TSelectors<T>;
+  createThunk: <E extends IEffects>(
+    effects?: E,
+  ) => {
+    thunk: TThunk<TState<T>, E>;
+    middleware: ThunkMiddleware;
+  };
 } {
   function traverseTree(target, cb, path = []) {
     return Object.keys(target).reduce((aggr, key) => {
@@ -178,5 +193,9 @@ export function buildNodes<T extends TTree>(
     reducer,
     actions,
     selectors,
+    createThunk: ((effects = {}) => ({
+      thunk: cb => cb,
+      middleware: thunkMiddleware.withExtraArgument(effects),
+    })) as any,
   };
 }

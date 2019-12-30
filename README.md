@@ -200,6 +200,79 @@ store.dispatch({
 store.getState(); // { "count": 5 }
 ```
 
+## Thunk
+
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore, applyMiddleware } from 'redux';
+
+const countNode = node(
+  {
+    count: 0,
+  },
+  {
+    increment: (state, amount: number = 1) => state.count + amount,
+  },
+);
+
+// The "createThunk" factory creates a typed function to create
+// thunks
+const { reducer, actions, createThunk } = buildNodes(countNode);
+
+// When creating the thunk you get both a function to create thunks
+// and the middleware back. If you already have the middleware, you
+// do not have to add it again
+const { thunk, middleware } = createThunk();
+
+// We use the middleware with Redux
+const store = createStore(reducer, applyMiddleware(middleware));
+
+// The thunk function is now typed with the state and you can custom type
+// any arguments, as shown with "incrementBy" below
+const incrementThunk = thunk((incrementBy: number) => (dispatch, getState) => {
+  dispatch(actions.increment(incrementBy));
+});
+
+store.dispatch(incrementThunk(2));
+```
+
+The **redux-thunk** middleware can also provide a third argument. This argument is valuable to inject APIs. It is considered good practice to expose all impure APIs (side effects) through this argument. The reason being that thunks becomes way easier to test and it creates a good separation of generic APIs and application specific APIs. As an example:
+
+```ts
+import { buildNodes, node } from 'redux-nodes';
+import { createStore, applyMiddleware } from 'redux';
+
+const auth = node(
+  {
+    username: null as string,
+  },
+  {
+    setUsername: (state, username: string) => (state.username = username),
+  },
+);
+
+const { reducer, actions, createThunk } = buildNodes(auth);
+
+// We pass our impure APIs (side effects) to the "createThunk" factory
+const { thunk, middleware } = createThunk({
+  api: {
+    getUser: (): Promise<{ username: string }> => fetch('/api/user').then(response => response.json()),
+  },
+});
+
+const store = createStore(reducer, applyMiddleware(middleware));
+
+// That last argument I personally like to call "effects" as it indicates
+// side effects of your application
+const getUser = thunk(() => async (dispatch, getState, effects) => {
+  const user = await effects.api.getUser();
+
+  dispatch(actions.setUsername(user.username));
+});
+
+store.dispatch(getUser());
+```
+
 ## Scaling up
 
 ```ts
@@ -277,6 +350,18 @@ const store = createStore(reducer);
 
 store.dispatch(actions.dashboard.admin.toggleView());
 store.getState().dashboard.admin.foo // "bar"
+```
+
+## Organizing a project
+
+In the examples above we have inlined all our code. In a real project you would split up your logic. Some developers prefer colocating the store logic with the components by features, others completely separates the store from the components. This is of course up to you, but in this example we will split the store and the components.
+
+```
+components |
+           | App.tsx
+store |
+      | index.ts
+      | adi
 ```
 
 ## Devtools

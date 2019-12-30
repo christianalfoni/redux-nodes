@@ -1,4 +1,5 @@
-import { createStore } from 'redux';
+import { applyMiddleware, createStore } from 'redux';
+import thunkMiddleware from 'redux-thunk';
 
 import { buildNodes, node } from '..';
 
@@ -126,4 +127,29 @@ test('should expose nested selectors', () => {
   const store = createStore(reducer);
 
   expect(selectors.foo.foo(store.getState())).toBe('bar');
+});
+
+test('should create thunk', () => {
+  expect.assertions(1);
+  const foo = node(
+    {
+      foo: 'bar',
+    },
+    {
+      changeFoo: (state, newFoo: string) => {
+        state.foo = newFoo;
+      },
+    },
+  );
+  const { reducer, actions, createThunk } = buildNodes(foo);
+  const { thunk, middleware } = createThunk({
+    upperCase: (value: string) => value.toUpperCase(),
+  });
+  const store = createStore(reducer, applyMiddleware(middleware));
+  const test = thunk((payload: string) => (dispatch, getState, effects) => {
+    dispatch(actions.changeFoo(effects.upperCase(getState().foo + payload)));
+  });
+
+  store.dispatch(test('koko'));
+  expect(store.getState().foo).toBe('BARKOKO');
 });
